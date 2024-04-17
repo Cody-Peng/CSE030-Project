@@ -78,6 +78,7 @@ int main(){
                 cout << "It's a tie" << endl;
             }
         } else if (option == 1){
+            system("clear");
             //play against human function
             //Current plan:
             //while !game.done:
@@ -87,10 +88,28 @@ int main(){
             //valid move func used to test, if fails call above again
             while(!game.done){
                 system("clear");
+                cout << game << endl;
                 int x, y;
-                
+                cout << endl;
+                cout << "Enter move for (" << (!game.currentTurn ? "X" : "O") << "): ";
+                cin >> x >> y;
+
+                game.play(x, y);
             }
-            cout << "This hasn't been implemented yet!" << endl;
+            system("clear");
+            cout << game << endl;
+            cout << endl;
+            if (game.hasWon(0)){
+                cout << "Player X has won" << endl;
+            }
+            else if (game.hasWon(1)){
+                cout << "Player O has won" << endl;
+            }
+            else {
+                cout << "It's a tie" << endl;
+            }
+
+            //cout << "This hasn't been implemented yet!" << endl;
         } else if(option == 3){
             //play against hard AI function
                 cout << "This hasn't been implemented yet!" << endl;
