@@ -199,8 +199,13 @@ struct GameState{
     }
 
     bool play(int x, int y){
+        // Check if the move is within the grid boundaries
+        if (x < 0 || x >= size || y < 0 || y >= size) {
+            throw std::out_of_range("Invalid move: Out of grid boundaries.");
+        }
+        
         if (grid[x][y] != -1){
-            return false;
+            throw std::invalid_argument("Invalid move: Cell already occupied.");
         }
 
         grid[x][y] = currentTurn;
@@ -219,11 +224,13 @@ struct GameState{
     }
 
     ~GameState(){
+        // Deallocate memory for the grid
         for (int i = 0; i < size; i++){
             delete[] grid[i];
         }
         delete[] grid;
     }
+
 };
 
 std::ostream& operator<<(std::ostream& os, const GameState& state){
