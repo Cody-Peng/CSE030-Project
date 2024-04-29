@@ -19,6 +19,7 @@ Vec validMove(GameState game){
 int main(){
     system("clear");
     GameState game;
+    GameState clear;
     int option = -1;
     
     while(option != 0 || option == -1){
@@ -70,12 +71,15 @@ int main(){
             cout << endl;
             if (game.hasWon(0)){
                 cout << "Player X has won" << endl;
+                game = clear;
             }
             else if (game.hasWon(1)){
                 cout << "Player O has won" << endl;
+                game = clear;
             }
             else {
                 cout << "It's a tie" << endl;
+                game = clear;
             }
         } else if (option == 1){
             system("clear");
