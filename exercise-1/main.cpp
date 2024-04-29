@@ -16,14 +16,16 @@ Vec validMove(GameState game) {
 }
 
 int main() {
+    system("clear");
     int size;
     cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
     cin >> size;
 
     while (cin.fail() || size != 3) {
+        cout << "Not implemented yet. \n";
         cout << "Invalid size. Please enter a number equal to 3: ";
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        // cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cin >> size;
     }
 
@@ -33,14 +35,20 @@ int main() {
     cout << "1. Play against easy computer\n";
     cout << "2. Play against hard computer\n";
     cout << "3. Play against another player\n";
+    cout << "4. Cancel\n";
     cin >> gameMode;
 
-    while (gameMode < 1 || gameMode > 3) {
+    while (gameMode < 1 || gameMode > 4) {
         cout << "Invalid choice. Please enter 1, 2, or 3: ";
         cin >> gameMode;
     }
 
     if(gameMode != 3) {
+        system("clear");
+        if (gameMode == 4){
+            cout << "Thanks for Playing!" << endl;
+            return 0;
+        }
         int firstPlayer;
         cout << "Who should start first?\n";
         cout << "1. Player\n";
