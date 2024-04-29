@@ -42,7 +42,7 @@ int main() {
     cin >> gameMode;
 
     while (gameMode < 1 || gameMode > 4) {
-        cout << "Invalid choice. Please enter 1, 2, or 3: ";
+        cout << "Invalid choice. Please enter 1, 2, 3, or 4: ";
         cin >> gameMode;
     }
 
