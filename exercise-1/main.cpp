@@ -1,130 +1,94 @@
 #include <iostream>
-#include <system_error>
+#include <cstdlib> 
 #include "GameState.h"
 
 using namespace std;
 
-
-Vec validMove(GameState game){
-    for (int i = 0; i < game.size; i++){
-        for (int j = 0; j < game.size; j++){
-            if (game.grid[i][j] == -1){
+Vec validMove(GameState game) {
+    for (int i = 0; i < game.size; i++) {
+        for (int j = 0; j < game.size; j++) {
+            if (game.grid[i][j] == -1) {
                 return Vec(i, j);
             }
         }
     }
-    return Vec(0,0);
+    return Vec(-1, -1);  
 }
 
-int main(){
-    system("clear");
-    GameState game;
-    GameState clear;
-    int option = -1;
-    
-    while(option != 0 || option == -1){
-        cout << "Would you like to play Tic-Tac-Toe: " << endl << "1. Against another person" << endl << "2. Against a weak AI" << endl << "3. Against an advanced AI" << endl << "Type \"1\", \"2\", or \"3\" to select! You can also type \"0\" to stop." << endl;
-        cin >> option;
-        if(option == 2){
-            cout << "would you like to play x or o?" << endl;
-            bool PlayerType;
-            string answer;
-            cin >> answer;
-            while(!game.done){
-                system("clear");
-                cout << game << endl;
-                
-                int x, y;
-                
-                if(answer == "x"){
-                    if (game.currentTurn){
-                        Vec move = validMove(game);
-                        x = move.x;
-                        y = move.y;
-                    }
-                    else{
-                        cout << endl;
-                        cout << "Enter move for (" << (!game.currentTurn ? "X" : "O") << "): ";
-                        cin >> x >> y;
-                    }
+int main() {
+    int size;
+    cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
+    cin >> size;
 
-                    game.play(x, y);
-                    }
-                    else{
-                        if (!game.currentTurn){
-                        Vec move = validMove(game);
-                        x = move.x;
-                        y = move.y;
-                    }
-                    else{
-                        cout << endl;
-                        cout << "Enter move for (" << (!game.currentTurn ? "X" : "O") << "): ";
-                        cin >> x >> y;
-                    }
+    while (cin.fail() || size != 3) {
+        cout << "Invalid size. Please enter a number equal to 3: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin >> size;
+    }
 
-                    game.play(x, y);
-                    }
-            }
+    GameState game(size); 
+    int gameMode;
+    cout << "Select game mode:\n";
+    cout << "1. Play against easy computer\n";
+    cout << "2. Play against hard computer\n";
+    cout << "3. Play against another player\n";
+    cin >> gameMode;
 
-            system("clear");
-            cout << game << endl;
-            cout << endl;
-            if (game.hasWon(0)){
-                cout << "Player X has won" << endl;
-                game = clear;
-            }
-            else if (game.hasWon(1)){
-                cout << "Player O has won" << endl;
-                game = clear;
-            }
-            else {
-                cout << "It's a tie" << endl;
-                game = clear;
-            }
-        } else if (option == 1){
-            system("clear");
-            //play against human function
-            //Current plan:
-            //while !game.done:
-            //First player is x, and makes a move using cin
-            //valid move func used to test, if fails call above again
-            //Second player is o, and makes a move using cin
-            //valid move func used to test, if fails call above again
-            while(!game.done){
-                system("clear");
-                cout << game << endl;
-                int x, y;
-                cout << endl;
-                cout << "Enter move for (" << (!game.currentTurn ? "X" : "O") << "): ";
-                cin >> x >> y;
+    while (gameMode < 1 || gameMode > 3) {
+        cout << "Invalid choice. Please enter 1, 2, or 3: ";
+        cin >> gameMode;
+    }
 
-                game.play(x, y);
-            }
-            system("clear");
-            cout << game << endl;
-            cout << endl;
-            if (game.hasWon(0)){
-                cout << "Player X has won" << endl;
-            }
-            else if (game.hasWon(1)){
-                cout << "Player O has won" << endl;
-            }
-            else {
-                cout << "It's a tie" << endl;
-            }
+    if(gameMode != 3) {
+        int firstPlayer;
+        cout << "Who should start first?\n";
+        cout << "1. Player\n";
+        cout << "2. Computer\n";
+        cin >> firstPlayer;
 
-            //cout << "This hasn't been implemented yet!" << endl;
-        } else if(option == 3){
-            //play against hard AI function
-                cout << "This hasn't been implemented yet!" << endl;
-        } else if(option == 0){
-            system("clear");
-            cout << "Thanks for playing!" << endl;
-            break;
-        }else{
-            system("clear");
-            cout << "Please enter a valid option!" << endl << endl << endl;
+        while (firstPlayer < 1 || firstPlayer > 2) {
+            cout << "Invalid choice. Please enter 1 for Player or 2 for Computer: ";
+            cin >> firstPlayer;
+        }
+
+        if (gameMode == 1 && firstPlayer == 2 || gameMode == 2 && firstPlayer == 2) {
+            game.currentTurn = 1;  
+        } else {
+            game.currentTurn = 0;  
         }
     }
+    
+    while (!game.done) {
+        system("clear");
+        cout << game << endl;
+
+        int x, y;
+        if ((gameMode == 1 || gameMode == 2) && game.currentTurn) {
+            Vec move = (gameMode == 1 ? validMove(game) : game.findBestMove(game));
+            x = move.x;
+            y = move.y;
+            cout << (gameMode == 1 ? "Easy Computer" : "Hard Computer") << " played (" << x << ", " << y << ")\n";
+            game.play(x, y);
+        } else if (gameMode == 3 || !game.currentTurn) {
+            cout << "Player " << (game.currentTurn ? "O" : "X") << "'s turn. Enter move (row column): ";
+            cin >> x >> y;
+            while (!game.play(x, y)) {
+                cout << "Invalid move. Try again. Player " << (game.currentTurn ? "O" : "X") << ": ";
+                cin >> x >> y;
+            }
+        }
+    }
+
+    system("clear");
+    cout << game << endl;
+    if (game.hasWon(0)) {
+        cout << "Player X has won!" << endl;
+    } else if (game.hasWon(1)) {
+        cout << "Player O has won!" << endl;
+    } else {
+        cout << "It's a tie!" << endl;
+    }
+
     return 0;
 }
