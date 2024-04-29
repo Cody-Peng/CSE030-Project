@@ -25,8 +25,11 @@ int main() {
         cout << "Not implemented yet. \n";
         cout << "Invalid size. Please enter a number equal to 3: ";
         cin.clear();
-        // cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while(cin.get() != '\n'){
+            continue;
+        }
         cin >> size;
+        // cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
     GameState game(size); 
