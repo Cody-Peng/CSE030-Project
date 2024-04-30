@@ -1,8 +1,40 @@
 #include <iostream>
 #include <cstdlib> 
 #include "GameState.h"
+#include <chrono>
 
 using namespace std;
+
+// struct TimeKeeper{
+//     clock_t start_time;
+//     TimeKeeper():start_time(clock()){}
+//     void resettime(){
+//         start_time = clock();
+//     }
+//     double TimeInSecs() const{
+//         clock_t end_time = clock();
+//         double seconds = static_cast<double>(end_time - start_time) / CLOCKS_PER_SEC;
+//         return seconds;
+//     }
+// };
+
+class Timer {
+private:
+    chrono::time_point<chrono::steady_clock> start_time;
+
+public:
+    Timer() : start_time(chrono::steady_clock::now()) {}
+
+    void reset() {
+        start_time = chrono::steady_clock::now();
+    }
+
+    double elapsed_seconds() const {
+        auto end_time = chrono::steady_clock::now();
+        chrono::duration<double> elapsed_seconds = end_time - start_time;
+        return elapsed_seconds.count();
+    }
+};
 
 Vec validMove(GameState game) {
     for (int i = 0; i < game.size; i++) {
@@ -21,9 +53,9 @@ int main() {
     cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
     cin >> size;
 
-    while (cin.fail() || size != 3) {
+    while (cin.fail() || size > 3) {
         cout << "Not implemented yet. \n";
-        cout << "Invalid size. Please enter a number equal to 3: ";
+        cout << "Invalid size. Please enter a number equal to or less than 3: ";
         cin.clear();
         while(cin.get() != '\n'){
             continue;
@@ -45,8 +77,10 @@ int main() {
         cout << "Invalid choice. Please enter 1, 2, 3, or 4: ";
         cin >> gameMode;
     }
-
+    Timer timer;
+    timer.reset();
     if(gameMode != 3) {
+    
         system("clear");
         if (gameMode == 4){
             cout << "Thanks for Playing!" << endl;
@@ -69,6 +103,8 @@ int main() {
             game.currentTurn = 0;  
         }
     }
+    
+
     
     while (!game.done) {
         system("clear");
@@ -100,6 +136,7 @@ int main() {
     } else {
         cout << "It's a tie!" << endl;
     }
-
+    double elapsed = timer.elapsed_seconds();
+    cout << "Elapsed time: " << elapsed << " seconds" << endl;
     return 0;
 }
