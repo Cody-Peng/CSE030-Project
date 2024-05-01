@@ -95,9 +95,11 @@ int main() {
         cout << "1. Player\n";
         cout << "2. Computer\n";
         cin >> firstPlayer;
-        while(cin.get() != '\n'){
-            continue;
-        }
+        while (!(cin >> firstPlayer) || (firstPlayer != 1 && firstPlayer != 2)) {
+        cout << "Invalid input. Please enter 1 for Player or 2 for Computer: ";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
 
         while (firstPlayer < 1 || firstPlayer > 2) {
             cout << "Invalid choice. Please enter 1 for Player or 2 for Computer: ";
