@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+#include <cctype>
+#include <string>
 #include "GameState.h"
 
 using namespace std;
@@ -34,6 +36,23 @@ Vec validMove(GameState game) {
     return Vec(-1, -1);
 }
 
+int getSingleDigitInput(const string& prompt) {
+    string line;
+    int number = 0;
+    while (true) {
+        cout << prompt;
+        getline(cin, line);
+
+        if (line.size() == 1 && isdigit(line[0])) {
+            number = line[0] - '0';
+            break;
+        } else {
+            cout << "Invalid input. Please enter exactly one digit.\n";
+        }
+    }
+    return number;
+}
+
 int mainMenu() {
     cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
     cout << R"(
@@ -47,39 +66,28 @@ int mainMenu() {
     cout << "\n1. Start new game\n";
     cout << "2. Exit\n";
     cout << "\nSelect an option: ";
-    int choice;
-    cin >> choice;
-    return choice;
+    return getSingleDigitInput("");
 }
 
 void playGame() {
     cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
-    int size;
-    cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
-    cin >> size;
-
-    while (cin.fail() || size > 3) {
+    int size = getSingleDigitInput("Enter the size of the board (e.g., 3 for a 3x3 board): ");
+    while (size > 3) {
         cout << "Not implemented yet. \n";
-        cout << "Invalid size. Please enter a number equal to or less than 3: ";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin >> size;
+        size = getSingleDigitInput("Invalid size. Please enter a number equal to or less than 3: ");
     }
 
     GameState game(size);
-    int gameMode;
-    cout << "Select game mode:\n";
-    cout << "1. Play against easy computer\n";
-    cout << "2. Play against hard computer\n";
-    cout << "3. Play against another player\n";
-    cout << "\nEnter your choice: ";
-    cin >> gameMode;
+    int gameMode = getSingleDigitInput("Select game mode:\n1. Play against easy computer\n2. Play against hard computer\n3. Play against another player\nEnter your choice: ");
+    while (gameMode < 1 || gameMode > 3) {
+        gameMode = getSingleDigitInput("Invalid choice. Please enter a number between 1 and 3: ");
+    }
 
     Timer timer;
     double elapsed = 0;
 
     while (!game.done) {
-        cout << "\033[2J\033[1;1H";  
+        cout << "\033[2J\033[1;1H";
         cout << game << endl;
 
         int x, y;
@@ -92,21 +100,19 @@ void playGame() {
         } else {
             cout << "Player " << (game.currentTurn ? "O" : "X") << "'s turn. Enter move (row column): ";
             timer.reset();
-            cin >> x >> y;
+            x = getSingleDigitInput("");
+            y = getSingleDigitInput("");
 
             while (x >= size || y >= size || x < 0 || y < 0 || !game.play(x, y)) {
-                if (x >= size || y >= size || x < 0 || y < 0) {
-                    cout << "Invalid position. The board is " << size << "x" << size << ". Enter move (row column): ";
-                } else {
-                    cout << "Invalid move. Cell already occupied. Try again. Player " << (game.currentTurn ? "O" : "X") << ": ";
-                }
-                cin >> x >> y;
+                cout << "Invalid position or move. Try again.\n";
+                x = getSingleDigitInput("Enter row: ");
+                y = getSingleDigitInput("Enter column: ");
             }
             elapsed += timer.elapsed_seconds();
         }
     }
 
-    cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
+    cout << "\033[2J\033[1;1H";
     cout << game << endl;
     if (game.hasWon(0)) {
         cout << "Player X has won!" << endl;
