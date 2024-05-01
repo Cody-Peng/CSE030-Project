@@ -79,8 +79,12 @@ int main() {
     }
     Timer timer;
     timer.reset();
+    Timer timer2;
+    timer2.reset();
+    double elapsed;
+    double elapsed2;
     if(gameMode != 3) {
-    
+        
         system("clear");
         if (gameMode == 4){
             cout << "Thanks for Playing!" << endl;
@@ -91,6 +95,9 @@ int main() {
         cout << "1. Player\n";
         cout << "2. Computer\n";
         cin >> firstPlayer;
+        while(cin.get() != '\n'){
+            continue;
+        }
 
         while (firstPlayer < 1 || firstPlayer > 2) {
             cout << "Invalid choice. Please enter 1 for Player or 2 for Computer: ";
@@ -104,7 +111,6 @@ int main() {
         }
     }
     
-
     
     while (!game.done) {
         system("clear");
@@ -119,10 +125,20 @@ int main() {
             game.play(x, y);
         } else if (gameMode == 3 || !game.currentTurn) {
             cout << "Player " << (game.currentTurn ? "O" : "X") << "'s turn. Enter move (row column): ";
+            if(game.currentTurn && gameMode != 3){
+            timer2.reset();}else{
+                timer.reset();
+            }
             cin >> x >> y;
+            
             while (!game.play(x, y)) {
                 cout << "Invalid move. Try again. Player " << (game.currentTurn ? "O" : "X") << ": ";
                 cin >> x >> y;
+            }
+            if(game.currentTurn){
+                elapsed = elapsed + timer.elapsed_seconds();
+            }else{
+                elapsed2 = elapsed + timer2.elapsed_seconds();
             }
         }
     }
@@ -136,7 +152,11 @@ int main() {
     } else {
         cout << "It's a tie!" << endl;
     }
-    double elapsed = timer.elapsed_seconds();
-    cout << "Elapsed time: " << elapsed << " seconds" << endl;
+    
+
+    cout << "Player one took: " << elapsed << " seconds" << endl;
+    if(gameMode == 3){
+        cout << "Player two took: " << elapsed2 << " seconds" << endl;
+    }
     return 0;
 }
