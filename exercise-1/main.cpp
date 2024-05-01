@@ -1,7 +1,7 @@
 #include <iostream>
-#include <cstdlib> 
-#include "GameState.h"
+#include <cstdlib>
 #include <chrono>
+#include "GameState.h"
 
 using namespace std;
 
@@ -31,20 +31,29 @@ Vec validMove(GameState game) {
             }
         }
     }
-    return Vec(-1, -1);  
+    return Vec(-1, -1);
 }
 
 int mainMenu() {
-    //system("clear");
-    cout << "Main Menu\n";
-    cout << "1. Start new game\n";
+    cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
+    cout << R"(
+    _______ _        _______           _______         
+   |__   __(_)      |__   __|         |__   __|        
+      | |   _  ___     | | __ _  ___     | | ___   ___ 
+      | |  | |/ __|    | |/ _` |/ __|    | |/ _ \ / _ \
+      | |  | | (__     | | (_| | (__     | | (_) |  __/
+      |_|  |_|\___|    |_|\__,_|\___|    |_|\___/ \___|
+    )" << endl;
+    cout << "\n1. Start new game\n";
     cout << "2. Exit\n";
+    cout << "\nSelect an option: ";
     int choice;
     cin >> choice;
     return choice;
 }
 
 void playGame() {
+    cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
     int size;
     cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
     cin >> size;
@@ -57,19 +66,20 @@ void playGame() {
         cin >> size;
     }
 
-    GameState game(size); 
+    GameState game(size);
     int gameMode;
     cout << "Select game mode:\n";
     cout << "1. Play against easy computer\n";
     cout << "2. Play against hard computer\n";
     cout << "3. Play against another player\n";
+    cout << "\nEnter your choice: ";
     cin >> gameMode;
 
     Timer timer;
     double elapsed = 0;
 
     while (!game.done) {
-        system("clear");
+        cout << "\033[2J\033[1;1H";  
         cout << game << endl;
 
         int x, y;
@@ -84,7 +94,6 @@ void playGame() {
             timer.reset();
             cin >> x >> y;
 
-            // Validate the move
             while (x >= size || y >= size || x < 0 || y < 0 || !game.play(x, y)) {
                 if (x >= size || y >= size || x < 0 || y < 0) {
                     cout << "Invalid position. The board is " << size << "x" << size << ". Enter move (row column): ";
@@ -97,7 +106,7 @@ void playGame() {
         }
     }
 
-    system("clear");
+    cout << "\033[2J\033[1;1H";  // Clear screen and move cursor to home position
     cout << game << endl;
     if (game.hasWon(0)) {
         cout << "Player X has won!" << endl;
