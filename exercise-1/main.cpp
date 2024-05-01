@@ -1,127 +1,396 @@
+#ifndef GAME_STATE_H
+#define GAME_STATE_H
+
+
+#define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_RESET "\033[0m"
+
 #include <iostream>
-#include <cstdlib> 
-#include "GameState.h"
-#include <chrono>
+// #include <algorithm>
 
-using namespace std;
+struct Vec{
+    int x;
+    int y;
 
-class Timer {
-private:
-    chrono::time_point<chrono::steady_clock> start_time;
-
-public:
-    Timer() : start_time(chrono::steady_clock::now()) {}
-
-    void reset() {
-        start_time = chrono::steady_clock::now();
+    Vec(){
+        x = 0;
+        y = 0;
     }
 
-    double elapsed_seconds() const {
-        auto end_time = chrono::steady_clock::now();
-        chrono::duration<double> elapsed_seconds = end_time - start_time;
-        return elapsed_seconds.count();
+    Vec(int x, int y){
+        this->x = x;
+        this->y = y;
+    }
+
+    void set(int x, int y){
+        this->x = x;
+        this->y = y;
     }
 };
 
-Vec validMove(GameState game) {
-    for (int i = 0; i < game.size; i++) {
-        for (int j = 0; j < game.size; j++) {
-            if (game.grid[i][j] == -1) {
-                return Vec(i, j);
-            }
-        }
-    }
-    return Vec(-1, -1);  
+std::ostream& operator<<(std::ostream& os, const Vec& v){
+    os << "(" << v.x << ", " << v.y << ")";
+
+    return os;
 }
 
-int mainMenu() {
-    //system("clear");
-    cout << "Main Menu\n";
-    cout << "1. Start new game\n";
-    cout << "2. Exit\n";
-    int choice;
-    cin >> choice;
-    return choice;
-}
+struct GameState;
+std::ostream& operator<<(std::ostream& os, const GameState& state);
 
-void playGame() {
+struct GameState{
+    int** grid;
+    bool currentTurn;
     int size;
-    cout << "Enter the size of the board (e.g., 3 for a 3x3 board): ";
-    cin >> size;
+    int turnCount;
 
-    while (cin.fail() || size > 3) {
-        cout << "Not implemented yet. \n";
-        cout << "Invalid size. Please enter a number equal to or less than 3: ";
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cin >> size;
-    }
+    bool done;
+    Vec lastMove;
 
-    GameState game(size); 
-    int gameMode;
-    cout << "Select game mode:\n";
-    cout << "1. Play against easy computer\n";
-    cout << "2. Play against hard computer\n";
-    cout << "3. Play against another player\n";
-    cin >> gameMode;
+    GameState(){
+        size = 3;
+        currentTurn = 0;
+        turnCount = 0;
+        done = false;
 
-    Timer timer;
-    double elapsed = 0;
+        lastMove.set(-1, -1);
 
-    while (!game.done) {
-        system("clear");
-        cout << game << endl;
+        grid = new int*[size];
 
-        int x, y;
-        if ((gameMode == 1 || gameMode == 2) && game.currentTurn) {
-            Vec move = (gameMode == 1 ? validMove(game) : game.findBestMove(game));
-            x = move.x;
-            y = move.y;
-            cout << (gameMode == 1 ? "Easy Computer" : "Hard Computer") << " played (" << x << ", " << y << ")\n";
-            game.play(x, y);
-        } else {
-            cout << "Player " << (game.currentTurn ? "O" : "X") << "'s turn. Enter move (row column): ";
-            timer.reset();
-            cin >> x >> y;
-
-            // Validate the move
-            while (x >= size || y >= size || x < 0 || y < 0 || !game.play(x, y)) {
-                if (x >= size || y >= size || x < 0 || y < 0) {
-                    cout << "Invalid position. The board is " << size << "x" << size << ". Enter move (row column): ";
-                } else {
-                    cout << "Invalid move. Cell already occupied. Try again. Player " << (game.currentTurn ? "O" : "X") << ": ";
-                }
-                cin >> x >> y;
+        for (int i = 0; i < size; i++){
+            grid[i] = new int[size];
+            for (int j = 0; j < size; j++){
+                grid[i][j] = -1;
             }
-            elapsed += timer.elapsed_seconds();
         }
     }
 
-    system("clear");
-    cout << game << endl;
-    if (game.hasWon(0)) {
-        cout << "Player X has won!" << endl;
-    } else if (game.hasWon(1)) {
-        cout << "Player O has won!" << endl;
-    } else {
-        cout << "It's a tie!" << endl;
+    GameState(int size){
+        this->size = size;
+        currentTurn = 0;
+        turnCount = 0;
+        done = false;
+
+        lastMove.set(-1, -1);
+
+        grid = new int*[size];
+
+        for (int i = 0; i < size; i++){
+            grid[i] = new int[size];
+            for (int j = 0; j < size; j++){
+                grid[i][j] = -1;
+            }
+        }
     }
 
-    cout << "Elapsed time: " << elapsed << " seconds" << endl;
-}
+    GameState(const GameState& other){
+        size = other.size;
+        currentTurn = other.currentTurn;
+        turnCount = other.turnCount;
+        done = other.done;
+        lastMove = other.lastMove;
 
-int main() {
-    while (true) {
-        int choice = mainMenu();
+        grid = new int*[size];
 
-        if (choice == 1) {
-            playGame();
-        } else if (choice == 2) {
-            cout << "Thanks for Playing!" << endl;
-            break;
+        for (int i = 0; i < size; i++){
+            grid[i] = new int[size];
+            for (int j = 0; j < size; j++){
+                grid[i][j] = other.grid[i][j];
+            }
+        }
+    }
+
+    bool operator==(const GameState& other){
+        bool sizeMatch = size == other.size;
+        bool currentTurnMatch = currentTurn == other.currentTurn;
+        bool turnCountMatch = turnCount == other.turnCount;
+        bool doneMatch = done == other.done;
+        bool lastMoveMatch = lastMove.x == other.lastMove.x && lastMove.y == other.lastMove.y;
+        if (sizeMatch && currentTurnMatch && turnCountMatch && doneMatch && lastMoveMatch){
+            for (int i = 0; i < size; i++){
+                for (int j = 0; j < size; j++){
+                    if (grid[i][j] != other.grid[i][j]){
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    GameState& operator=(const GameState& other){
+        currentTurn = other.currentTurn;
+        turnCount = other.turnCount;
+        done = other.done;
+        lastMove = other.lastMove;
+
+        if (size == other.size){
+            for (int i = 0; i < size; i++){
+                for (int j = 0; j < size; j++){
+                    grid[i][j] = other.grid[i][j];
+                }
+            }
+        }
+        else{
+            for (int i = 0; i < size; i++){
+                delete[] grid[i];
+            }
+            delete[] grid;
+
+            size = other.size;
+
+            grid = new int*[size];
+
+            for (int i = 0; i < size; i++){
+                grid[i] = new int[size];
+                for (int j = 0; j < size; j++){
+                    grid[i][j] = other.grid[i][j];
+                }
+            }
+        }
+
+        return *this;
+    }
+
+    bool hasWon(int player){
+        for (int i = 0; i < size; i++){
+            int count = 0;
+            for (int j = 0; j < size; j++){
+                if (grid[i][j] == player){
+                    count++;
+                }
+            }
+            if (count == size){
+                return true;
+            }
+        }
+        for (int i = 0; i < size; i++){
+            int count = 0;
+            for (int j = 0; j < size; j++){
+                if (grid[j][i] == player){
+                    count++;
+                }
+            }
+            if (count == size){
+                return true;
+            }
+        }
+        int mainDiagCount = 0;
+
+        for (int i = 0; i < size; i++){
+            if (grid[i][i] == player){
+                mainDiagCount++;
+            }
+        }
+        if (mainDiagCount == size){
+            return true;
+        }
+
+        int secondaryDiagCount = 0;
+        for (int i = 0; i < size; i++){
+            if (grid[i][size-1-i] == player){
+                secondaryDiagCount++;
+            }
+        }
+        if (secondaryDiagCount == size){
+            return true;
+        }
+        
+        return false;
+    }
+
+    bool play(int x, int y){
+        if (grid[x][y] != -1){
+            return false;
+        }
+
+        grid[x][y] = currentTurn;
+        currentTurn = !currentTurn;
+        turnCount++;
+        lastMove.set(x, y);
+
+        if (turnCount == size * size){
+            done = true;
+        }
+        else if (hasWon(0) || hasWon(1)){
+            done = true;
+        }
+
+        return true;
+    }
+
+    int evaluate(GameState& game){
+        for (int row = 0; row < game.size; ++row) {
+            bool rowWin = true;
+            for (int col = 1; col < game.size; ++col) {
+                if (game.grid[row][col] != game.grid[row][col - 1] || game.grid[row][col] == -1) {
+                    rowWin = false;
+                    break;
+                }
+            }
+            if (rowWin) {
+                return (game.grid[row][0] == 1) ? 10 : -10;
+            }
+        }
+
+        for (int col = 0; col < game.size; ++col) {
+            bool colWin = true;
+            for (int row = 1; row < game.size; ++row) {
+                if (game.grid[row][col] != game.grid[row - 1][col] || game.grid[row][col] == -1) {
+                    colWin = false;
+                    break;
+                }
+            }
+            if (colWin) {
+                return (game.grid[0][col] == 1) ? 10 : -10;
+            }
+        }
+
+        bool mainDiagWin = true;
+        for (int i = 1; i < game.size; i++) {
+            if (game.grid[i][i] != game.grid[i - 1][i - 1] || game.grid[i][i] == -1) {
+                mainDiagWin = false;
+                break;
+            }
+        }
+        if (mainDiagWin) {
+            return (game.grid[0][0] == 1) ? 10 : -10;
+        }
+
+        bool secDiagWin = true;
+        for (int i = 1; i < game.size; i++) {
+            if (game.grid[i][game.size - i - 1] != game.grid[i - 1][game.size - i] || game.grid[i][game.size - i - 1] == -1) {
+                secDiagWin = false;
+                break;
+            }
+        }
+        if (secDiagWin) {
+            return (game.grid[0][game.size - 1] == 1) ? 10 : -10;
+        }
+
+        return 0;
+    }
+
+    bool hasEmptyCell() const {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (grid[i][j] == -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    int minimax(GameState& game, int depth, bool isMax) {
+        int score = evaluate(game);
+
+        if (score == 10) return score;
+
+        if (score == -10) return score;
+
+        if (!game.hasEmptyCell()) return 0;
+
+        if (isMax) {
+            int best = -1000;
+
+            for (int i = 0; i < game.size; i++) {
+                for (int j = 0; j < game.size; j++) {
+                    if (game.grid[i][j] == -1) {
+                        game.grid[i][j] = 1;
+
+                        best = std::max(best, minimax(game, depth + 1, !isMax));
+
+                        game.grid[i][j] = -1;
+                    }
+                }
+            }
+            return best;
         } else {
-            cout << "Invalid choice. Please select 1 or 2." << endl;
+            int best = 1000;
+
+            for (int i = 0; i < game.size; i++) {
+                for (int j = 0; j < game.size; j++) {
+                    if (game.grid[i][j] == -1) {
+                        game.grid[i][j] = 0;
+
+                        best = std::min(best, minimax(game, depth + 1, !isMax));
+
+                        game.grid[i][j] = -1;
+                    }
+                }
+            }
+            return best;
         }
     }
-    return 0;
+
+    Vec findBestMove(GameState& game) {
+        int bestVal = -1000;
+        Vec bestMove(-1, -1);
+
+        for (int i = 0; i < game.size; i++) {
+            for (int j = 0; j < game.size; j++) {
+                if (game.grid[i][j] == -1) {
+                    game.grid[i][j] = 1;
+
+                    int moveVal = minimax(game, 0, false);
+
+                    game.grid[i][j] = -1;
+
+                    if (moveVal > bestVal) {
+                        bestMove.x = i;
+                        bestMove.y = j;
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+        return bestMove;
+    }
+
+    ~GameState(){
+        for (int i = 0; i < size; i++){
+            delete[] grid[i];
+        }
+        delete[] grid;
+    }
+};
+
+std::ostream& operator<<(std::ostream& os, const GameState& state){
+    os << "   ";
+    for (int j = 0; j < state.size; j++) {
+        os << " " << j << "  ";
+    }
+    os << std::endl << "   ";
+    for (int j = 0; j < state.size; j++) {
+        os << "--- ";
+    }
+    os << std::endl;
+    for (int i = 0; i < state.size; i++) {
+        os << i << " ";
+        for (int j = 0; j < state.size; j++) {
+            os << "| ";
+            if (state.grid[i][j] == 0) {
+                os << COLOR_GREEN << 'X' << COLOR_RESET << " ";
+            } else if (state.grid[i][j] == 1) {
+                os << COLOR_RED << 'O' << COLOR_RESET << " ";
+            } else {
+                os << ' ' << " ";
+            }
+            if (j == state.size - 1) os << "|";
+        }
+        os << std::endl << "   ";
+        for (int j = 0; j < state.size; j++) {
+            os << "--- ";
+        }
+        os << std::endl;
+    }
+
+    return os;
 }
+
+#endif
