@@ -1,6 +1,11 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+// 定义颜色代码
+#define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_RESET "\033[0m"
+
 #include <iostream>
 // #include <algorithm>
 
@@ -357,30 +362,29 @@ struct GameState{
 
 std::ostream& operator<<(std::ostream& os, const GameState& state){
     os << "   ";
-    for (int j = 0; j < state.size; j++){
+    for (int j = 0; j < state.size; j++) {
         os << " " << j << "  ";
     }
-    os << std::endl;
-    os << "   ";
-    for (int j = 0; j < state.size; j++){
+    os << std::endl << "   ";
+    for (int j = 0; j < state.size; j++) {
         os << "--- ";
     }
     os << std::endl;
-    for (int i = 0; i < state.size; i++){
+    for (int i = 0; i < state.size; i++) {
         os << i << " ";
-        for (int j = 0; j < state.size; j++){
-            char c = ' ';
-            if (state.grid[i][j] == 0){
-                c = 'X';
+        for (int j = 0; j < state.size; j++) {
+            os << "| ";
+            if (state.grid[i][j] == 0) {
+                os << COLOR_GREEN << 'X' << COLOR_RESET << " ";
+            } else if (state.grid[i][j] == 1) {
+                os << COLOR_RED << 'O' << COLOR_RESET << " ";
+            } else {
+                os << ' ' << " ";
             }
-            else if (state.grid[i][j] == 1){
-                c = 'O';
-            }
-            os << "| " << c << " ";
             if (j == state.size - 1) os << "|";
         }
         os << std::endl << "   ";
-        for (int j = 0; j < state.size; j++){
+        for (int j = 0; j < state.size; j++) {
             os << "--- ";
         }
         os << std::endl;
